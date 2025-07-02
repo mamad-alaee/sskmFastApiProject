@@ -1,5 +1,5 @@
 from fastapi import FastAPI,Form
-from pydantic import BaseModel,constr,conint
+from pydantic import BaseModel,constr,conint,Field
 from enum import Enum
 
 userList = [{"name":"ali","age":25,"gender":"male"}]
@@ -34,11 +34,34 @@ def add_user(name:str=Form(...),age:int=Form(...),gender:GenderModel=Form(...)):
     # return {"job":"ok","user":userObject}
 
 
+# product => post get => model => {name,description,price,quantity,category}
 
+class productModel(BaseModel):
+    name: constr(min_length=3,max_length=50) # type: ignore
+    description: constr(min_length=3,max_length=200) # type: ignore
+    price: Field(...,ge=1,description="price should be greater than or equal to 1") # type: ignore
+    quantity: conint(ge=1) # type: ignore
+    category: constr(min_length=3,max_length=50) # type: ignore
 
-
-
-
+@baseApp.post("/product")
+def add_product(
+    name:str=Form(...),
+    description:str=Form(...),
+    price:int=Form(...),
+    quantity:int=Form(...),
+    category:str=Form(...)
+    ):
+    try: 
+        productData = productModel(name=name,
+                                   description=description,
+                                   price=price,
+                                   quantity=quantity,
+                                   category=category)
+    except Exception as e:
+        return {"job":"error","message":str(e)}
+    
+    # productObject = {"name":name,"description":description,"price":price,"quantity":quantity,"category":category}
+    # productList.append(productObject)
 
 
 
