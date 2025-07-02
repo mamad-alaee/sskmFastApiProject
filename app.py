@@ -1,9 +1,8 @@
 from fastapi import FastAPI,Form
+from pydantic import BaseModel,constr,conint
+from enum import Enum
 
-userList = ["ali",
-            "veli",
-            "ayse",
-            "hasan"]
+userList = [{"name":"ali","age":25,"gender":"male"}]
 
 baseApp = FastAPI(
     title="SSKM API",
@@ -11,8 +10,28 @@ baseApp = FastAPI(
     version="0.1.0"
 )
 
+class GenderModel(str,Enum):
+    male = "male"
+    female = "female"
+    other = "other"
 
+class UserValidator(BaseModel):
+    name: constr(min_length=3,max_length=50) # type: ignore
+    age: conint(ge=18,le=100) # type: ignore
+    gender:GenderModel
 
+@baseApp.post("/user")
+def add_user(name:str=Form(...),age:int=Form(...),gender:GenderModel=Form(...)):
+    try: 
+        userData = UserValidator(name=name,age=age,gender=gender)
+    except Exception as e:
+        return {"job":"error","message":str(e)}
+    
+    
+    
+    # userObject = {"name":name,"age":age,"gender":gender}
+    # userList.append(userObject)
+    # return {"job":"ok","user":userObject}
 
 
 
@@ -37,7 +56,7 @@ baseApp = FastAPI(
 # def delete_user(userId:int):
 #     return {"job":"ok","id":userId}
 
-# # query parameter
+# # query parameter 
 # @baseApp.delete("/users2")
 # def delete_user2(userId:int):
 #     return {"job":"ok","id":userId}
